@@ -3,7 +3,7 @@ import { Button } from 'components/button';
 
 import styles from './ArticleParamsForm.module.scss';
 import clsx from 'clsx';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Select } from '../select';
 import { Text } from '../text';
 import {
@@ -24,7 +24,7 @@ type ArticleParamsFormProps = {
 };
 
 export const ArticleParamsForm = (props: ArticleParamsFormProps) => {
-	const [isVisible, setVisible] = useState<boolean>(false);
+	const [isMenuVisible, setMenuVisible] = useState<boolean>(false);
 
 	const [formSetting, setFormSetting] =
 		useState<ArticleStateType>(defaultArticleState);
@@ -36,6 +36,24 @@ export const ArticleParamsForm = (props: ArticleParamsFormProps) => {
 			}));
 		};
 	};
+	useEffect(() => {
+		const handleClick = (e: Event) => {
+			if (
+				!(e.target as HTMLElement).closest('aside') &&
+				!(e.target as HTMLElement).closest('div[role="button"]')
+			) {
+				setMenuVisible(false);
+			}
+		};
+		if (isMenuVisible === true) {
+			document.addEventListener('click', handleClick);
+		}
+
+		return () => {
+			document.removeEventListener('click', handleClick);
+		};
+	}, [isMenuVisible]);
+
 	const onSubmit = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		props.setStyle(formSetting);
@@ -47,12 +65,18 @@ export const ArticleParamsForm = (props: ArticleParamsFormProps) => {
 	};
 	return (
 		<>
-			<ArrowButton isVisible={isVisible} onClick={() => setVisible(true)} />
-			<div
-				className={clsx(styles.closeBox, isVisible && styles.closeBox_open)}
-				onClick={() => setVisible(false)}></div>
+			<ArrowButton
+				isVisible={isMenuVisible}
+				onClick={() => setMenuVisible(true)}
+			/>
 			<aside
-				className={clsx(styles.container, isVisible && styles.container_open)}>
+				className={clsx(
+					styles.container,
+					isMenuVisible && styles.container_open
+				)}
+				onClick={(e) => {
+					e.stopPropagation();
+				}}>
 				<form className={styles.form} onSubmit={onSubmit} onReset={onReset}>
 					<Text weight={800} size={31} uppercase={true}>
 						Задайте параметры
